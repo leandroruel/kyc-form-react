@@ -12,16 +12,17 @@ import { ageValidator, phoneValidator, formatPhone } from '@/lib/validations';
 
 const personalInfoSchema = z.object({
   fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100),
-  email: z.string().email('Email inválido').max(255),
+  email: z.email('Email inválido').max(255),
   phone: phoneValidator,
   dateOfBirth: ageValidator(18),
   country: z.string().min(1, 'Selecione um país'),
 });
 
 export type PersonalInfoData = z.infer<typeof personalInfoSchema>;
+type PersonalInfoFormData = z.input<typeof personalInfoSchema>;
 
 interface PersonalInfoStepProps {
-  defaultValues?: Partial<PersonalInfoData>;
+  defaultValues?: Partial<PersonalInfoFormData>;
   onNext: (data: PersonalInfoData) => void;
 }
 
@@ -39,18 +40,27 @@ const countries = [
 ];
 
 export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProps) {
-  const form = useForm<PersonalInfoData>({
+  const normalizedDefaults = {
+    fullName: defaultValues?.fullName || '',
+    email: defaultValues?.email || '',
+    phone: defaultValues?.phone || '',
+    country: defaultValues?.country || '',
+    dateOfBirth: defaultValues?.dateOfBirth
+      ? (typeof defaultValues.dateOfBirth === 'string'
+          ? new Date(defaultValues.dateOfBirth)
+          : defaultValues.dateOfBirth)
+      : undefined,
+  };
+
+  const form = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
-    defaultValues: defaultValues || {
-      fullName: '',
-      email: '',
-      phone: '',
-      country: '',
-    },
+    defaultValues: normalizedDefaults,
   });
 
-  const onSubmit = (data: PersonalInfoData) => {
-    onNext(data);
+  const onSubmit = async (data: PersonalInfoFormData) => {
+    // Parse the data through the schema to get the transformed output
+    const validatedData = await personalInfoSchema.parseAsync(data);
+    onNext(validatedData);
   };
 
   return (
@@ -103,13 +113,15 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
         <div>
           <Label>Data de Nascimento *</Label>
           <DatePicker
-            selected={form.watch('dateOfBirth') || null}
+            selected={form.watch('dateOfBirth')
+                ? new Date(form.watch('dateOfBirth') as Date)
+                : null}
             onChange={(date: Date | null) => {
               if (date) {
                 form.setValue('dateOfBirth', date);
-              } else {
+              } 
                 form.setValue('dateOfBirth', undefined);
-              }
+              
             }}
             dateFormat="dd/MM/yyyy"
             locale={ptBR}

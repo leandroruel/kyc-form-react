@@ -80,25 +80,28 @@ export const phoneValidator = z.string().refine((val) => {
 }, { message: 'Telefone inválido' });
 
 export const ageValidator = (minAge: number = 18) => {
-  return z.date().optional().refine((date) => {
+  return z.union([z.date(), z.string()]).optional().transform((val) => {
+    if (!val) return undefined;
+    return typeof val === 'string' ? new Date(val) : val;
+  }).refine((date) => {
     if (!date) return false;
-    
+
     const today = new Date();
     const birthDate = new Date(date);
-    
+
     // Verifica se a data não está no futuro
     if (birthDate > today) {
       return false;
     }
-    
+
     // Calcula a idade
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     return age >= minAge;
   }, { message: `Você deve ter pelo menos ${minAge} anos e a data não pode estar no futuro` });
 };

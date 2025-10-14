@@ -8,8 +8,24 @@ import { FileUpload } from '@/components/ui/file-upload';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Spinner } from '@/components/ui/spinner';
+import { toast } from 'sonner';
+import { useEffect, useRef } from 'react';
 
 const opencepBaseUrl = 'https://opencep.com/v1/';
+
+interface CepApiResponse {
+  cep: string;
+  logradouro: string;
+  complemento: string;
+  unidade: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  estado: string;
+  regiao: string;
+  ibge: string;
+}
 
 const addressSchema = z.object({
   street: z.string().min(5, 'Endereço deve ter pelo menos 5 caracteres').max(200),
@@ -39,9 +55,13 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
     },
   });
 
-  const getAddressByPostalCode = async (postalCode: string) => {
-    const response = await fetch(`${opencepBaseUrl}${postalCode}`);
-    const data = await response.json();
+  const getAddressByPostalCode = async (postalCode: string): Promise<CepApiResponse | null> => {
+    const response = await fetch(`${opencepBaseUrl}${postalCode}.json`);
+    if (!response.ok) {
+      toast.error('CEP não encontrado');
+      return null;
+    }
+    const data: CepApiResponse = await response.json();
     return data;
   };
 
@@ -49,11 +69,26 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
     return postalCode.replace(/\D/g, '');
   };
 
-  const { data: addressData } = useQuery({
-    queryKey: ['address', form.watch('postalCode')],
-    queryFn: () => getAddressByPostalCode(form.watch('postalCode')),
-    enabled: !!form.watch('postalCode'),
+  const postalCode = form.watch('postalCode');
+  const cleanedPostalCode = formatPostalCode(postalCode);
+
+  const { data: addressData, isLoading } = useQuery<CepApiResponse | null>({
+    queryKey: ['address', cleanedPostalCode],
+    queryFn: () => getAddressByPostalCode(cleanedPostalCode),
+    enabled: cleanedPostalCode.length === 8,
+    retry: false,
   });
+
+  const prevAddressData = useRef<CepApiResponse | null>(null);
+
+  useEffect(() => {
+    if (addressData && addressData !== prevAddressData.current) {
+      form.setValue('street', addressData.logradouro || '');
+      form.setValue('city', addressData.localidade || '');
+      form.setValue('state', addressData.uf || '');
+      prevAddressData.current = addressData;
+    }
+  }, [addressData, form]);
 
   const fileUpload = useFileUpload({
     maxSize: 5,
@@ -76,11 +111,7 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
           <Label htmlFor="street">Endereço Completo *</Label>
           <Input
             id="street"
-            {...form.register('street', {
-              onChange: (e) => {
-                e.target.value = addressData?.logradouro || '';
-              },
-            })}
+            {...form.register('street')}
             placeholder="Rua Example, 123, Apto 45"
             className="mt-1.5"
           />
@@ -94,11 +125,7 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
             <Label htmlFor="city">Cidade *</Label>
             <Input
               id="city"
-              {...form.register('city', {
-                onChange: (e) => {
-                  e.target.value = addressData?.cidade || '';
-                },
-              })}
+              {...form.register('city')}
               placeholder="São Paulo"
               className="mt-1.5"
             />
@@ -111,11 +138,7 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
             <Label htmlFor="state">Estado *</Label>
             <Input
               id="state"
-              {...form.register('state', {
-                onChange: (e) => {
-                  e.target.value = addressData?.estado || '';
-                },
-              })}
+              {...form.register('state')}
               placeholder="SP"
               className="mt-1.5"
             />
@@ -127,16 +150,24 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
 
         <div>
           <Label htmlFor="postalCode">CEP *</Label>
-          <Input
-            id="postalCode"
-            {...form.register('postalCode', {
-              onChange: (e) => {
-                e.target.value = formatPostalCode(e.target.value);
-              },
-            })}
-            placeholder="12345-678"
-            className="mt-1.5"
-          />
+          <div className="relative">
+            <Input
+              id="postalCode"
+              {...form.register('postalCode', {
+                onChange: (e) => {
+                  e.target.value = formatPostalCode(e.target.value);
+                },
+              })}
+              placeholder="12345678"
+              className="mt-1.5 pr-10"
+              maxLength={8}
+            />
+            {isLoading && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.75">
+                <Spinner className="size-5 text-muted-foreground" />
+              </div>
+            )}
+          </div>
           {form.formState.errors.postalCode && (
             <p className="text-sm text-destructive mt-1">{form.formState.errors.postalCode.message}</p>
           )}

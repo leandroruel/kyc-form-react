@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMultiStepForm } from '@/hooks/useMultiStepForm';
 import { ProgressSteps } from '@/components/ui/progress-steps';
 import { PersonalInfoStep, type PersonalInfoData } from '@/components/kyc/PersonalInfoStep';
@@ -11,6 +12,21 @@ import { toast } from 'sonner';
 import { ModeToggle } from '@/components/mode-toggle';
 
 const STORAGE_KEY = 'kyc-form-data';
+
+const stepVariants = {
+  initial: {
+    opacity: 0,
+    y: -20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    y: 20,
+  },
+};
 
 const steps = [
   { id: 'personal', title: 'Dados Pessoais', description: 'Informações básicas' },
@@ -76,7 +92,12 @@ const Index = () => {
   if (isComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background p-4">
-        <div className="max-w-md w-full text-center space-y-6 animate-in fade-in duration-700">
+        <motion.div
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="max-w-md w-full text-center space-y-6"
+        >
           <div className="mx-auto w-20 h-20 bg-gradient-success rounded-full flex items-center justify-center shadow-glow">
             <CheckCircle className="h-10 w-10 text-success-foreground" />
           </div>
@@ -96,7 +117,7 @@ const Index = () => {
               <li>• Acesso liberado após aprovação</li>
             </ul>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -199,43 +220,55 @@ const Index = () => {
             </div>
 
             {/* Step Content */}
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              {multiStepForm.currentStepIndex === 0 && (
-                <PersonalInfoStep
-                  defaultValues={formData.personalInfo}
-                  onNext={handlePersonalInfoNext}
-                />
-              )}
-              {multiStepForm.currentStepIndex === 1 && (
-                <AddressStep
-                  defaultValues={formData.address}
-                  onNext={handleAddressNext}
-                  onPrevious={multiStepForm.previousStep}
-                />
-              )}
-              {multiStepForm.currentStepIndex === 2 && (
-                <IdentityStep
-                  defaultValues={formData.identity}
-                  onNext={handleIdentityNext}
-                  onPrevious={multiStepForm.previousStep}
-                />
-              )}
-              {multiStepForm.currentStepIndex === 3 && (
-                <SelfieStep
-                  defaultValues={formData.selfie}
-                  onNext={handleSelfieNext}
-                  onPrevious={multiStepForm.previousStep}
-                />
-              )}
-              {multiStepForm.currentStepIndex === 4 && (
-                <ReviewStep
-                  data={formData as ReviewData}
-                  onEdit={multiStepForm.goToStep}
-                  onPrevious={multiStepForm.previousStep}
-                  onSubmit={handleFinalSubmit}
-                />
-              )}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={multiStepForm.currentStepIndex}
+                variants={stepVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{
+                  duration: 0.4,
+                  ease: "easeOut",
+                }}
+              >
+                {multiStepForm.currentStepIndex === 0 && (
+                  <PersonalInfoStep
+                    defaultValues={formData.personalInfo}
+                    onNext={handlePersonalInfoNext}
+                  />
+                )}
+                {multiStepForm.currentStepIndex === 1 && (
+                  <AddressStep
+                    defaultValues={formData.address}
+                    onNext={handleAddressNext}
+                    onPrevious={multiStepForm.previousStep}
+                  />
+                )}
+                {multiStepForm.currentStepIndex === 2 && (
+                  <IdentityStep
+                    defaultValues={formData.identity}
+                    onNext={handleIdentityNext}
+                    onPrevious={multiStepForm.previousStep}
+                  />
+                )}
+                {multiStepForm.currentStepIndex === 3 && (
+                  <SelfieStep
+                    defaultValues={formData.selfie}
+                    onNext={handleSelfieNext}
+                    onPrevious={multiStepForm.previousStep}
+                  />
+                )}
+                {multiStepForm.currentStepIndex === 4 && (
+                  <ReviewStep
+                    data={formData as ReviewData}
+                    onEdit={multiStepForm.goToStep}
+                    onPrevious={multiStepForm.previousStep}
+                    onSubmit={handleFinalSubmit}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </main>
