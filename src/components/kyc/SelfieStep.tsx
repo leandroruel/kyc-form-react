@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import Webcam from 'react-webcam';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Camera, ArrowLeft, RotateCw } from 'lucide-react';
+import { Camera as CameraIcon, ArrowLeft, RotateCw, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { useFaceDetection } from '@/hooks/useFaceDetection';
 
 export interface SelfieData {
   selfie?: File;
@@ -16,11 +18,10 @@ interface SelfieStepProps {
   onPrevious: () => void;
 }
 
-export function SelfieStep({ defaultValues, onNext, onPrevious }: SelfieStepProps) {
-  const [stream, setStream] = useState<MediaStream | null>(null);
+export function SelfieStep({ onNext, onPrevious }: SelfieStepProps) {
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const webcamRef = useRef<Webcam>(null);
+  const videoRef = useRef<HTMLVideoElement>(null!);
 
   const fileUpload = useFileUpload({
     maxSize: 5,
@@ -28,52 +29,52 @@ export function SelfieStep({ defaultValues, onNext, onPrevious }: SelfieStepProp
     multiple: false,
   });
 
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-      });
-      setStream(mediaStream);
-      setIsCameraActive(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (error) {
-      toast.error('Erro ao acessar câmera', {
-        description: 'Não foi possível acessar a câmera. Verifique as permissões.',
-      });
+  // Face detection hook
+  const faceDetection = useFaceDetection(videoRef, {
+    enabled: isCameraActive,
+    minConfidence: 0.6,
+  });
+
+  // Get video element from Webcam ref
+  useEffect(() => {
+    if (webcamRef.current?.video) {
+      videoRef.current = webcamRef.current.video;
     }
+  }, [isCameraActive]);
+
+  const startCamera = () => {
+    setIsCameraActive(true);
   };
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-      setIsCameraActive(false);
-    }
+    setIsCameraActive(false);
   };
 
   const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0);
-        canvas.toBlob((blob) => {
-          if (blob) {
+    if (!faceDetection.result.faceDetected) {
+      toast.error('Nenhum rosto detectado', {
+        description: 'Por favor, posicione seu rosto na frente da câmera.',
+      });
+      return;
+    }
+
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        // Convert base64 to blob
+        fetch(imageSrc)
+          .then((res) => res.blob())
+          .then((blob) => {
             const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileUpload.addFiles(dataTransfer.files);
             stopCamera();
+            faceDetection.reset();
             toast.success('Selfie capturada!', {
-              description: 'Foto capturada com sucesso.',
+              description: `Foto capturada com sucesso. Confiança: ${Math.round(faceDetection.result.confidence * 100)}%`,
             });
-          }
-        }, 'image/jpeg', 0.95);
+          });
       }
     }
   };
@@ -114,7 +115,7 @@ export function SelfieStep({ defaultValues, onNext, onPrevious }: SelfieStepProp
                 className="w-full"
                 size="lg"
               >
-                <Camera className="mr-2 h-5 w-5" />
+                <CameraIcon className="mr-2 h-5 w-5" />
                 Ativar Câmera
               </Button>
               
@@ -142,15 +143,48 @@ export function SelfieStep({ defaultValues, onNext, onPrevious }: SelfieStepProp
           {isCameraActive && (
             <div className="space-y-3">
               <div className="relative rounded-lg overflow-hidden bg-black">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                  }}
                   className="w-full aspect-video object-cover"
                 />
+
+                {/* Face detection overlay */}
+                <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-black/60 backdrop-blur-sm">
+                  {!faceDetection.isInitialized && (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-yellow-400" />
+                      <span className="text-xs text-white font-medium">Inicializando...</span>
+                    </>
+                  )}
+                  {faceDetection.isInitialized && faceDetection.result.faceDetected && (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      <span className="text-xs text-white font-medium">
+                        Rosto detectado ({Math.round(faceDetection.result.confidence * 100)}%)
+                      </span>
+                    </>
+                  )}
+                  {faceDetection.isInitialized && !faceDetection.result.faceDetected && (
+                    <>
+                      <XCircle className="h-4 w-4 text-red-400" />
+                      <span className="text-xs text-white font-medium">Nenhum rosto detectado</span>
+                    </>
+                  )}
+                </div>
+
+                {faceDetection.error && (
+                  <div className="absolute bottom-4 left-4 right-4 px-3 py-2 rounded-lg bg-red-500/80 backdrop-blur-sm">
+                    <span className="text-xs text-white">{faceDetection.error}</span>
+                  </div>
+                )}
               </div>
-              <canvas ref={canvasRef} className="hidden" />
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -164,8 +198,9 @@ export function SelfieStep({ defaultValues, onNext, onPrevious }: SelfieStepProp
                   type="button"
                   onClick={capturePhoto}
                   className="flex-1"
+                  disabled={!faceDetection.result.faceDetected || !faceDetection.isInitialized}
                 >
-                  <Camera className="mr-2 h-4 w-4" />
+                  <CameraIcon className="mr-2 h-4 w-4" />
                   Capturar Foto
                 </Button>
               </div>
@@ -174,13 +209,25 @@ export function SelfieStep({ defaultValues, onNext, onPrevious }: SelfieStepProp
 
           {fileUpload.files.length > 0 && !isCameraActive && (
             <div className="space-y-3">
-              <FileUpload
-                onFilesSelected={(files) => fileUpload.addFiles(files)}
-                files={fileUpload.files}
-                onRemoveFile={fileUpload.removeFile}
-                accept="image/jpeg,image/png,image/jpg"
-                multiple={false}
-              />
+              <div className="rounded-lg border border-border p-4 bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    {fileUpload.files[0].preview && (
+                      <img
+                        src={fileUpload.files[0].preview}
+                        alt="Selfie capturada"
+                        className="w-32 h-32 object-cover rounded-md"
+                      />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Selfie capturada</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {fileUpload.files[0].file.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
               <Button
                 type="button"
                 onClick={() => {
