@@ -12,7 +12,7 @@ import { cpfValidator, formatCPF } from '@/lib/validations';
 
 const identitySchema = z.object({
   idType: z.enum(['passport', 'driver_license', 'rg'], {
-    message: 'Selecione um tipo de documento',
+    message: 'Por favor, selecione um tipo de documento',
   }),
   idNumber: cpfValidator,
 });
@@ -128,7 +128,7 @@ export function IdentityStep({ defaultValues, onNext, onPrevious }: IdentityStep
           <div>
             <Label>Foto do Documento (Verso) *</Label>
             <p className="text-sm text-muted-foreground mb-3">
-              Verso do documento
+              Envie a foto do verso do documento
             </p>
             <FileUpload
               onFilesSelected={(files) => backUpload.addFiles(files)}

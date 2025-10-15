@@ -19,11 +19,11 @@ interface Country {
 }
 
 const personalInfoSchema = z.object({
-  fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100),
-  email: z.email('Email inválido').max(255),
+  fullName: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres').max(100),
+  email: z.string().email('E-mail inválido').max(255),
   phone: phoneValidator,
   dateOfBirth: ageValidator(18),
-  country: z.string().min(1, 'Selecione um país'),
+  country: z.string().min(1, 'Por favor, selecione um país'),
 });
 
 export type PersonalInfoData = z.infer<typeof personalInfoSchema>;
@@ -60,11 +60,7 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
     email: defaultValues?.email || '',
     phone: defaultValues?.phone || '',
     country: defaultValues?.country || '',
-    dateOfBirth: defaultValues?.dateOfBirth
-      ? (typeof defaultValues.dateOfBirth === 'string'
-          ? new Date(defaultValues.dateOfBirth)
-          : defaultValues.dateOfBirth)
-      : undefined,
+    dateOfBirth: defaultValues?.dateOfBirth || undefined,
   };
 
   const form = useForm<PersonalInfoFormData>({

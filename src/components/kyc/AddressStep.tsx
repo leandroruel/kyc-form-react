@@ -29,9 +29,9 @@ interface CepApiResponse {
 }
 
 const addressSchema = z.object({
-  street: z.string().min(5, 'Endereço deve ter pelo menos 5 caracteres').max(200),
-  city: z.string().min(2, 'Cidade deve ter pelo menos 2 caracteres').max(100),
-  state: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres').max(100),
+  street: z.string().min(5, 'O endereço deve ter pelo menos 5 caracteres').max(200),
+  city: z.string().min(2, 'A cidade deve ter pelo menos 2 caracteres').max(100),
+  state: z.string().min(2, 'O estado deve ter pelo menos 2 caracteres').max(100),
   postalCode: z.string().min(5, 'CEP inválido').max(20),
 });
 

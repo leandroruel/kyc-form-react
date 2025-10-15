@@ -214,7 +214,7 @@ const Index = () => {
               <h2 className="text-2xl font-bold">{multiStepForm.currentStep.title}</h2>
               {multiStepForm.currentStep.description && (
                 <p className="text-muted-foreground mt-1">
-                  Por favor forneça seus {multiStepForm.currentStep.title.toLowerCase()}
+                  Por favor forneça sua {multiStepForm.currentStep.title.toLowerCase()}
                 </p>
               )}
             </div>
