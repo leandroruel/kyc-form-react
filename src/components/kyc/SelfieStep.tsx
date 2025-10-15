@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Camera as CameraIcon, ArrowLeft, RotateCw, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFaceDetection } from '@/hooks/useFaceDetection';
