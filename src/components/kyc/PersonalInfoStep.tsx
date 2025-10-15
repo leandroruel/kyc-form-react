@@ -2,13 +2,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
-import DatePicker from 'react-datepicker';
-import { ptBR } from 'date-fns/locale';
-import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
+import { DatePicker } from '@/components/ui/datepicker';
 import { ageValidator, phoneValidator, formatPhone } from '@/lib/validations';
 
 interface Country {
@@ -128,34 +126,18 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
         </div>
 
         <div>
-          <Label>Data de Nascimento *</Label>
-          <DatePicker
-            selected={form.watch('dateOfBirth')
-                ? new Date(form.watch('dateOfBirth') as Date)
-                : null}
-            onChange={(date: Date | null) => {
-              if (date) {
-                form.setValue('dateOfBirth', date);
-              } 
-                form.setValue('dateOfBirth', undefined);
-              
-            }}
-            dateFormat="dd/MM/yyyy"
-            locale={ptBR}
-            showMonthDropdown
-            showYearDropdown
-            dropdownMode="select"
-            yearDropdownItemNumber={100}
-            minDate={new Date('1900-01-01')}
-            maxDate={new Date()}
-            placeholderText="dd/mm/aaaa"
-            className="w-full mt-1.5 px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
-            wrapperClassName="w-full"
-            isClearable
-            clearButtonTitle="Limpar data"
-            monthsShown={1}
-            autoComplete="off"
-          />
+          <Label htmlFor="dateOfBirth">Data de Nascimento *</Label>
+          <div className="mt-1.5">
+            <DatePicker
+              date={form.watch('dateOfBirth') as Date | undefined}
+              onDateChange={(date) => form.setValue('dateOfBirth', date)}
+              placeholder="Selecione sua data de nascimento"
+              minDate={new Date('1900-01-01')}
+              maxDate={new Date()}
+              startYear={1900}
+              endYear={new Date().getFullYear()}
+            />
+          </div>
           {form.formState.errors.dateOfBirth && (
             <p className="text-sm text-destructive mt-1">{form.formState.errors.dateOfBirth.message}</p>
           )}
