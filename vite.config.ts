@@ -17,14 +17,12 @@ export default defineConfig({
         manualChunks: (id) => {
           // Separate heavy vendor libraries
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // Bundle React and Radix UI together to avoid context issues
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('@radix-ui')) {
               return 'react-vendor';
             }
             if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
               return 'form-vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
             }
             if (id.includes('@vladmandic/human')) {
               return 'face-detection';
