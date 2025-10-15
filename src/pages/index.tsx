@@ -1,17 +1,31 @@
-import { useState, useEffect } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMultiStepForm } from '@/hooks/useMultiStepForm';
 import { ProgressSteps } from '@/components/ui/progress-steps';
-import { PersonalInfoStep, type PersonalInfoData } from '@/components/kyc/PersonalInfoStep';
-import { AddressStep, type AddressData } from '@/components/kyc/AddressStep';
-import { IdentityStep, type IdentityData } from '@/components/kyc/IdentityStep';
-import { SelfieStep, type SelfieData } from '@/components/kyc/SelfieStep';
-import { ReviewStep, type ReviewData } from '@/components/kyc/ReviewStep';
+import type { PersonalInfoData } from '@/components/kyc/PersonalInfoStep';
+import type { AddressData } from '@/components/kyc/AddressStep';
+import type { IdentityData } from '@/components/kyc/IdentityStep';
+import type { SelfieData } from '@/components/kyc/SelfieStep';
+import type { ReviewData } from '@/components/kyc/ReviewStep';
 import { toast } from 'sonner';
 import { ModeToggle } from '@/components/mode-toggle';
 
+// Lazy load KYC step components for better code splitting
+const PersonalInfoStep = lazy(() => import('@/components/kyc/PersonalInfoStep').then(m => ({ default: m.PersonalInfoStep })));
+const AddressStep = lazy(() => import('@/components/kyc/AddressStep').then(m => ({ default: m.AddressStep })));
+const IdentityStep = lazy(() => import('@/components/kyc/IdentityStep').then(m => ({ default: m.IdentityStep })));
+const SelfieStep = lazy(() => import('@/components/kyc/SelfieStep').then(m => ({ default: m.SelfieStep })));
+const ReviewStep = lazy(() => import('@/components/kyc/ReviewStep').then(m => ({ default: m.ReviewStep })));
+
 const STORAGE_KEY = 'kyc-form-data';
+
+// Loading component for lazy-loaded steps
+const StepLoader = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 const stepVariants = {
   initial: {
@@ -220,55 +234,57 @@ const Index = () => {
             </div>
 
             {/* Step Content */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={multiStepForm.currentStepIndex}
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{
-                  duration: 0.4,
-                  ease: "easeOut",
-                }}
-              >
-                {multiStepForm.currentStepIndex === 0 && (
-                  <PersonalInfoStep
-                    defaultValues={formData.personalInfo}
-                    onNext={handlePersonalInfoNext}
-                  />
-                )}
-                {multiStepForm.currentStepIndex === 1 && (
-                  <AddressStep
-                    defaultValues={formData.address}
-                    onNext={handleAddressNext}
-                    onPrevious={multiStepForm.previousStep}
-                  />
-                )}
-                {multiStepForm.currentStepIndex === 2 && (
-                  <IdentityStep
-                    defaultValues={formData.identity}
-                    onNext={handleIdentityNext}
-                    onPrevious={multiStepForm.previousStep}
-                  />
-                )}
-                {multiStepForm.currentStepIndex === 3 && (
-                  <SelfieStep
-                    defaultValues={formData.selfie}
-                    onNext={handleSelfieNext}
-                    onPrevious={multiStepForm.previousStep}
-                  />
-                )}
-                {multiStepForm.currentStepIndex === 4 && (
-                  <ReviewStep
-                    data={formData as ReviewData}
-                    onEdit={multiStepForm.goToStep}
-                    onPrevious={multiStepForm.previousStep}
-                    onSubmit={handleFinalSubmit}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <Suspense fallback={<StepLoader />}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={multiStepForm.currentStepIndex}
+                  variants={stepVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{
+                    duration: 0.4,
+                    ease: "easeOut",
+                  }}
+                >
+                  {multiStepForm.currentStepIndex === 0 && (
+                    <PersonalInfoStep
+                      defaultValues={formData.personalInfo}
+                      onNext={handlePersonalInfoNext}
+                    />
+                  )}
+                  {multiStepForm.currentStepIndex === 1 && (
+                    <AddressStep
+                      defaultValues={formData.address}
+                      onNext={handleAddressNext}
+                      onPrevious={multiStepForm.previousStep}
+                    />
+                  )}
+                  {multiStepForm.currentStepIndex === 2 && (
+                    <IdentityStep
+                      defaultValues={formData.identity}
+                      onNext={handleIdentityNext}
+                      onPrevious={multiStepForm.previousStep}
+                    />
+                  )}
+                  {multiStepForm.currentStepIndex === 3 && (
+                    <SelfieStep
+                      defaultValues={formData.selfie}
+                      onNext={handleSelfieNext}
+                      onPrevious={multiStepForm.previousStep}
+                    />
+                  )}
+                  {multiStepForm.currentStepIndex === 4 && (
+                    <ReviewStep
+                      data={formData as ReviewData}
+                      onEdit={multiStepForm.goToStep}
+                      onPrevious={multiStepForm.previousStep}
+                      onSubmit={handleFinalSubmit}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </Suspense>
           </div>
         </div>
       </main>

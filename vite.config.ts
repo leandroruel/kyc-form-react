@@ -14,24 +14,47 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Separate heavy vendor libraries
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'ui-vendor': [
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-label',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-tooltip',
-          ],
-          // Keep face detection separate (only loaded when needed)
-          'face-detection': ['@vladmandic/human'],
-          // Icons in separate chunk
-          'icons': ['lucide-react'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
+              return 'form-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('@vladmandic/human')) {
+              return 'face-detection';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            if (id.includes('framer-motion')) {
+              return 'animation';
+            }
+            // Other node_modules
+            return 'vendor';
+          }
+
+          // Separate each KYC step component into its own chunk
+          if (id.includes('/components/kyc/PersonalInfoStep')) {
+            return 'kyc-personal';
+          }
+          if (id.includes('/components/kyc/AddressStep')) {
+            return 'kyc-address';
+          }
+          if (id.includes('/components/kyc/IdentityStep')) {
+            return 'kyc-identity';
+          }
+          if (id.includes('/components/kyc/SelfieStep')) {
+            return 'kyc-selfie';
+          }
+          if (id.includes('/components/kyc/ReviewStep')) {
+            return 'kyc-review';
+          }
         },
       },
     },
