@@ -15,28 +15,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Separate heavy vendor libraries
-          if (id.includes('node_modules')) {
-            // Bundle React and Radix UI together to avoid context issues
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('@radix-ui')) {
-              return 'react-vendor';
-            }
-            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
-              return 'form-vendor';
-            }
-            if (id.includes('@vladmandic/human')) {
-              return 'face-detection';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            if (id.includes('framer-motion')) {
-              return 'animation';
-            }
-            // Other node_modules
-            return 'vendor';
-          }
-
           // Separate each KYC step component into its own chunk
           if (id.includes('/components/kyc/PersonalInfoStep')) {
             return 'kyc-personal';
