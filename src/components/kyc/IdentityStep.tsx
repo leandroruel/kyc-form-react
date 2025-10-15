@@ -38,9 +38,9 @@ const idTypes = [
 export function IdentityStep({ defaultValues, onNext, onPrevious }: IdentityStepProps) {
   const form = useForm<IdentityData>({
     resolver: zodResolver(identitySchema),
-    defaultValues: defaultValues || {
-      idType: undefined,
-      idNumber: '',
+    defaultValues: {
+      idType: defaultValues?.idType || '' as IdentityData['idType'],
+      idNumber: defaultValues?.idNumber || '',
     },
   });
 
@@ -80,7 +80,7 @@ export function IdentityStep({ defaultValues, onNext, onPrevious }: IdentityStep
         <div>
           <Label htmlFor="idType">Tipo de Documento *</Label>
           <Select
-            value={form.watch('idType')}
+            value={form.watch('idType') || ''}
             onValueChange={(value) => form.setValue('idType', value as any)}
           >
             <SelectTrigger className="mt-1.5">
