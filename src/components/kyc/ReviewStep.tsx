@@ -138,30 +138,38 @@ export function ReviewStep({ data, onEdit, onPrevious, onSubmit }: ReviewStepPro
         ))}
       </div>
 
-      <div className="bg-muted/50 rounded-lg p-4">
-        <div className="flex items-start space-x-3">
+      <div className="bg-muted/50 border border-border rounded-lg p-5">
+        <div className="flex items-start gap-3">
           <Checkbox
             id="terms"
             checked={acceptedTerms}
             onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-            className="mt-1"
+            className="mt-0.5 shrink-0"
           />
-          <div className="flex-1">
-            <Label
-              htmlFor="terms"
-              className="text-sm font-normal cursor-pointer leading-relaxed"
-            >
+          <Label
+            htmlFor="terms"
+            className="text-sm leading-relaxed cursor-pointer select-none"
+          >
+            <span className="block">
               Eu concordo com os{' '}
-              <a href="#" className="text-primary hover:underline">
+              <a
+                href="#"
+                className="text-primary hover:underline font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
                 Termos de Uso
               </a>{' '}
               e{' '}
-              <a href="#" className="text-primary hover:underline">
+              <a
+                href="#"
+                className="text-primary hover:underline font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
                 Política de Privacidade
               </a>
               . Confirmo que as informações fornecidas são verdadeiras e precisas.
-            </Label>
-          </div>
+            </span>
+          </Label>
         </div>
       </div>
 
