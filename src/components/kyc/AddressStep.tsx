@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { useFormNavigation } from '@/hooks/useFormNavigation';
 import { ArrowLeft, Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner } from '@/components/ui/spinner';
@@ -104,6 +105,12 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
     };
     onNext(submitData);
   };
+
+  // Add keyboard shortcuts for form navigation
+  useFormNavigation({
+    onNext: form.handleSubmit(onSubmit),
+    onPrevious,
+  });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

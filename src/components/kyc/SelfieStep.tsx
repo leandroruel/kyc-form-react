@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Camera as CameraIcon, ArrowLeft, RotateCw, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFaceDetection } from '@/hooks/useFaceDetection';
+import { useFormNavigation } from '@/hooks/useFormNavigation';
 
 export interface SelfieData {
   selfie?: File;
@@ -87,6 +88,16 @@ export function SelfieStep({ onNext, onPrevious }: SelfieStepProps) {
     setPreviewUrl(null);
     startCamera();
   };
+
+  // Add keyboard shortcuts for form navigation
+  useFormNavigation({
+    onNext: () => {
+      if (capturedFile) {
+        handleSubmit(new Event('submit') as any);
+      }
+    },
+    onPrevious,
+  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

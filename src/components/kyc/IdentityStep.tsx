@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { useFormNavigation } from '@/hooks/useFormNavigation';
 import { ArrowLeft } from 'lucide-react';
 import { cpfValidator, formatCPF } from '@/lib/validations';
 
@@ -66,6 +67,12 @@ export function IdentityStep({ defaultValues, onNext, onPrevious }: IdentityStep
     };
     onNext(submitData);
   };
+
+  // Add keyboard shortcuts for form navigation
+  useFormNavigation({
+    onNext: form.handleSubmit(onSubmit),
+    onPrevious,
+  });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

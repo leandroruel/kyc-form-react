@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Edit, FileText, CheckCircle } from 'lucide-react';
+import { useFormNavigation } from '@/hooks/useFormNavigation';
 import { type PersonalInfoData } from './PersonalInfoStep';
 import { type AddressData } from './AddressStep';
 import { type IdentityData } from './IdentityStep';
@@ -36,6 +37,16 @@ export function ReviewStep({ data, onEdit, onPrevious, onSubmit }: ReviewStepPro
     await new Promise((resolve) => setTimeout(resolve, 2000));
     onSubmit();
   };
+
+  // Add keyboard shortcuts for form navigation
+  useFormNavigation({
+    onNext: () => {
+      if (acceptedTerms && !isSubmitting) {
+        handleSubmit(new Event('submit') as any);
+      }
+    },
+    onPrevious,
+  });
 
   const sections = [
     {

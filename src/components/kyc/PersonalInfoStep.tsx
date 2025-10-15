@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/datepicker';
+import { useFormNavigation } from '@/hooks/useFormNavigation';
 import { ageValidator, phoneValidator, formatPhone } from '@/lib/validations';
 
 interface Country {
@@ -73,6 +74,11 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
     const validatedData = await personalInfoSchema.parseAsync(data);
     onNext(validatedData);
   };
+
+  // Add keyboard shortcuts for form navigation
+  useFormNavigation({
+    onNext: form.handleSubmit(onSubmit),
+  });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

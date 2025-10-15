@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMultiStepForm } from '@/hooks/useMultiStepForm';
 import { ProgressSteps } from '@/components/ui/progress-steps';
@@ -10,6 +10,8 @@ import type { SelfieData } from '@/components/kyc/SelfieStep';
 import type { ReviewData } from '@/components/kyc/ReviewStep';
 import { toast } from 'sonner';
 import { ModeToggle } from '@/components/mode-toggle';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Kbd } from '@/components/ui/kbd';
 
 // Lazy load KYC step components for better code splitting
 const PersonalInfoStep = lazy(() => import('@/components/kyc/PersonalInfoStep').then(m => ({ default: m.PersonalInfoStep })));
@@ -224,13 +226,57 @@ const Index = () => {
 
           {/* Form Card */}
           <div className="bg-card rounded-xl border border-border p-6 md:p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{multiStepForm.currentStep.title}</h2>
-              {multiStepForm.currentStep.description && (
-                <p className="text-muted-foreground mt-1">
-                  Por favor forneça sua {multiStepForm.currentStep.title.toLowerCase()}
-                </p>
-              )}
+            <div className="mb-6 flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">{multiStepForm.currentStep.title}</h2>
+                {multiStepForm.currentStep.description && (
+                  <p className="text-muted-foreground mt-1">
+                    Por favor forneça sua {multiStepForm.currentStep.title.toLowerCase()}
+                  </p>
+                )}
+              </div>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    aria-label="Atalhos de teclado"
+                  >
+                    <Info className="h-5 w-5" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80">
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-sm mb-2">Atalhos de Teclado</h3>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Use os atalhos abaixo para navegar mais rapidamente pelo formulário
+                      </p>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Continuar</span>
+                        <div className="flex items-center gap-1">
+                          <Kbd>Ctrl</Kbd>
+                          <span className="text-muted-foreground">+</span>
+                          <Kbd>Enter</Kbd>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Voltar</span>
+                        <div className="flex items-center gap-1">
+                          <Kbd>Ctrl</Kbd>
+                          <span className="text-muted-foreground">+</span>
+                          <Kbd>Backspace</Kbd>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Step Content */}
