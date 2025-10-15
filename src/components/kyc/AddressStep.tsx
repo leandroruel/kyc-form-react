@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useFileUpload } from '@/hooks/useFileUpload';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner } from '@/components/ui/spinner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { useEffect, useRef } from 'react';
 
@@ -149,7 +150,21 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
         </div>
 
         <div>
-          <Label htmlFor="postalCode">CEP *</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="postalCode">CEP *</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex">
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="max-w-xs">
+                  Digite o CEP para preencher automaticamente o endereço, cidade e estado
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <div className="relative">
             <Input
               id="postalCode"

@@ -1,14 +1,24 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 import DatePicker from 'react-datepicker';
 import { ptBR } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { ageValidator, phoneValidator, formatPhone } from '@/lib/validations';
+
+interface Country {
+  name: {
+    common: string;
+    official: string;
+  };
+  cca2: string;
+  flag: string;
+}
 
 const personalInfoSchema = z.object({
   fullName: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100),
@@ -26,20 +36,27 @@ interface PersonalInfoStepProps {
   onNext: (data: PersonalInfoData) => void;
 }
 
-const countries = [
-  'Brasil',
-  'Estados Unidos',
-  'Argentina',
-  'Chile',
-  'Colômbia',
-  'México',
-  'Paraguai',
-  'Peru',
-  'Uruguai',
-  'Venezuela',
-];
-
 export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProps) {
+  const { data: countries = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
+    queryKey: ['countries'],
+    queryFn: async () => {
+      const response = await fetch(
+        'https://restcountries.com/v3.1/all?fields=name,cca2,flag'
+      );
+      if (!response.ok) throw new Error('Failed to fetch countries');
+      const data = await response.json();
+      return data.sort((a: Country, b: Country) =>
+        a.name.common.localeCompare(b.name.common)
+      );
+    },
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+
+  const countryOptions: ComboboxOption[] = countries.map((country) => ({
+    value: country.name.common,
+    label: country.name.common,
+    icon: country.flag,
+  }));
   const normalizedDefaults = {
     fullName: defaultValues?.fullName || '',
     email: defaultValues?.email || '',
@@ -146,21 +163,17 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
 
         <div>
           <Label htmlFor="country">País de Residência *</Label>
-          <Select
-            value={form.watch('country')}
-            onValueChange={(value) => form.setValue('country', value)}
-          >
-            <SelectTrigger className="mt-1.5">
-              <SelectValue placeholder="Selecione o país" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              {countries.map((country) => (
-                <SelectItem key={country} value={country}>
-                  {country}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="mt-1.5">
+            <Combobox
+              options={countryOptions}
+              value={form.watch('country')}
+              onValueChange={(value) => form.setValue('country', value)}
+              placeholder="Selecione o país"
+              searchPlaceholder="Buscar país..."
+              emptyText="Nenhum país encontrado"
+              isLoading={isLoadingCountries}
+            />
+          </div>
           {form.formState.errors.country && (
             <p className="text-sm text-destructive mt-1">{form.formState.errors.country.message}</p>
           )}
