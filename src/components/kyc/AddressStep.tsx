@@ -7,33 +7,13 @@ import { Label } from '@/components/ui/label';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useFormNavigation } from '@/hooks/useFormNavigation';
-import { ArrowLeft, Info } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { Spinner } from '@/components/ui/spinner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { toast } from 'sonner';
-import { useEffect, useRef } from 'react';
-
-const opencepBaseUrl = 'https://opencep.com/v1/';
-
-interface CepApiResponse {
-  cep: string;
-  logradouro: string;
-  complemento: string;
-  unidade: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
-  estado: string;
-  regiao: string;
-  ibge: string;
-}
+import { ArrowLeft } from 'lucide-react';
 
 const addressSchema = z.object({
   street: z.string().min(5, 'O endereço deve ter pelo menos 5 caracteres').max(200),
   city: z.string().min(2, 'A cidade deve ter pelo menos 2 caracteres').max(100),
   state: z.string().min(2, 'O estado deve ter pelo menos 2 caracteres').max(100),
-  postalCode: z.string().min(5, 'CEP inválido').max(20),
+  postalCode: z.string().min(3, 'Código postal inválido').max(20),
 });
 
 export type AddressData = z.infer<typeof addressSchema> & {
@@ -56,41 +36,6 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
       postalCode: '',
     },
   });
-
-  const getAddressByPostalCode = async (postalCode: string): Promise<CepApiResponse | null> => {
-    const response = await fetch(`${opencepBaseUrl}${postalCode}.json`);
-    if (!response.ok) {
-      toast.error('CEP não encontrado');
-      return null;
-    }
-    const data: CepApiResponse = await response.json();
-    return data;
-  };
-
-  const formatPostalCode = (postalCode: string) => {
-    return postalCode.replace(/\D/g, '');
-  };
-
-  const postalCode = form.watch('postalCode');
-  const cleanedPostalCode = formatPostalCode(postalCode);
-
-  const { data: addressData, isLoading } = useQuery<CepApiResponse | null>({
-    queryKey: ['address', cleanedPostalCode],
-    queryFn: () => getAddressByPostalCode(cleanedPostalCode),
-    enabled: cleanedPostalCode.length === 8,
-    retry: false,
-  });
-
-  const prevAddressData = useRef<CepApiResponse | null>(null);
-
-  useEffect(() => {
-    if (addressData && addressData !== prevAddressData.current) {
-      form.setValue('street', addressData.logradouro || '');
-      form.setValue('city', addressData.localidade || '');
-      form.setValue('state', addressData.uf || '');
-      prevAddressData.current = addressData;
-    }
-  }, [addressData, form]);
 
   const fileUpload = useFileUpload({
     maxSize: 5,
@@ -157,39 +102,13 @@ export function AddressStep({ defaultValues, onNext, onPrevious }: AddressStepPr
         </div>
 
         <div>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="postalCode">CEP *</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button type="button" className="inline-flex">
-                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p className="max-w-xs">
-                  Digite o CEP para preencher automaticamente o endereço, cidade e estado
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="relative">
-            <Input
-              id="postalCode"
-              {...form.register('postalCode', {
-                onChange: (e) => {
-                  e.target.value = formatPostalCode(e.target.value);
-                },
-              })}
-              placeholder="12345678"
-              className="mt-1.5 pr-10"
-              maxLength={8}
-            />
-            {isLoading && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.75">
-                <Spinner className="size-5 text-muted-foreground" />
-              </div>
-            )}
-          </div>
+          <Label htmlFor="postalCode">Código Postal *</Label>
+          <Input
+            id="postalCode"
+            {...form.register('postalCode')}
+            placeholder="12345-678"
+            className="mt-1.5"
+          />
           {form.formState.errors.postalCode && (
             <p className="text-sm text-destructive mt-1">{form.formState.errors.postalCode.message}</p>
           )}
