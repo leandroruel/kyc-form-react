@@ -1,179 +1,109 @@
-# KYC Frontend Application
+# Aplicação Frontend KYC
 
-A modern Know Your Customer (KYC) verification frontend application built with React, TypeScript, and Vite. This application provides a multi-step form for collecting and verifying user identity information with real-time face detection capabilities.
+Uma aplicação moderna de verificação Know Your Customer (KYC) construída com React, TypeScript e Vite. Esta aplicação fornece um formulário de múltiplas etapas para coletar e verificar informações de identidade do usuário com recursos de detecção facial em tempo real.
 
-## Features
+## Funcionalidades
 
-- Multi-step KYC verification form
-- Real-time face detection during selfie capture
-- Address validation and proof upload
-- Identity document verification
-- Responsive design with dark/light theme support
-- Form validation with React Hook Form and Zod
-- Modern UI components using Radix UI and Tailwind CSS
+- Formulário de verificação KYC em múltiplas etapas
+- Detecção facial em tempo real durante a captura de selfie
+- Validação de endereço e upload de comprovante
+- Verificação de documento de identidade
+- Design responsivo com suporte a tema escuro/claro
+- Validação de formulário com React Hook Form e Zod
+- Componentes UI modernos usando Radix UI e Tailwind CSS
 
-## Tech Stack
+## Stack Tecnológica
 
-- **React 19** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **Tailwind CSS 4** - Styling
-- **Radix UI** - Accessible component primitives
-- **React Hook Form** - Form state management
-- **Zod** - Schema validation
-- **TanStack Query** - Data fetching and caching
-- **React Webcam** - Camera integration
-- **@vladmandic/human** - AI-powered face detection
-- **Framer Motion** - Animations
-- **date-fns** - Date utilities
-- **Sonner** - Toast notifications
+- **React 19** - Framework UI
+- **TypeScript** - Segurança de tipos
+- **Vite** - Ferramenta de build e servidor de desenvolvimento
+- **Tailwind CSS 4** - Estilização
+- **Radix UI** - Primitivos de componentes acessíveis
+- **React Hook Form** - Gerenciamento de estado de formulários
+- **Zod** - Validação de schema
+- **TanStack Query** - Busca e cache de dados
+- **React Webcam** - Integração com câmera
+- **@vladmandic/human** - Detecção facial com IA
+- **Framer Motion** - Animações
+- **date-fns** - Utilitários de data
+- **Sonner** - Notificações toast
 
-## Prerequisites
+## Pré-requisitos
 
-Before you begin, ensure you have the following installed:
+Antes de começar, certifique-se de ter instalado:
 
-- **Node.js** (version 18 or higher)
-- **npm** or **yarn** or **pnpm** package manager
-- A modern web browser with webcam access (for selfie verification)
+- **Node.js** (versão 18 ou superior)
+- Gerenciador de pacotes **npm** ou **yarn** ou **pnpm**
+- Um navegador web moderno com acesso à webcam (para verificação de selfie)
 
-## Getting Started
+## Começando
 
-### 1. Clone the repository
+### 1. Clone o repositório
 
 ```bash
 git clone <repository-url>
 cd woovi-test-kyc-frontent
 ```
 
-### 2. Install dependencies
+### 2. Instale as dependências
 
-Using npm:
+Usando npm:
 ```bash
 npm install
 ```
 
-Using yarn:
+Usando yarn:
 ```bash
 yarn install
 ```
 
-Using pnpm:
+Usando pnpm:
 ```bash
 pnpm install
 ```
 
-### 3. Start the development server
+### 3. Inicie o servidor de desenvolvimento
 
 ```bash
 npm run dev
 ```
 
-The application will start on `http://localhost:5173` (or another port if 5173 is busy).
+A aplicação iniciará em `http://localhost:5173` (ou outra porta se a 5173 estiver ocupada).
 
-## Available Scripts
+## Scripts Disponíveis
 
-- `npm run dev` - Start the development server with hot module replacement
-- `npm run build` - Build the application for production
-- `npm run preview` - Preview the production build locally
-- `npm run lint` - Run ESLint to check code quality
+- `npm run dev` - Inicia o servidor de desenvolvimento com hot module replacement
+- `npm run build` - Compila a aplicação para produção
+- `npm run preview` - Visualiza a build de produção localmente
+- `npm run lint` - Executa o ESLint para verificar a qualidade do código
 
-## Project Structure
+## Estrutura do Projeto
 
 ```
 src/
 ├── components/
-│   ├── kyc/              # KYC form step components
+│   ├── kyc/              # Componentes das etapas do formulário KYC
 │   │   ├── PersonalInfoStep.tsx
 │   │   ├── AddressStep.tsx
 │   │   ├── IdentityStep.tsx
 │   │   ├── SelfieStep.tsx
 │   │   └── ReviewStep.tsx
-│   ├── ui/               # Reusable UI components
+│   ├── ui/               # Componentes UI reutilizáveis
 │   └── ...
-├── hooks/                # Custom React hooks
+├── hooks/                # Hooks React customizados
 │   └── useFaceDetection.ts
-├── lib/                  # Utility functions
-├── pages/                # Page components
-└── App.tsx               # Main application component
+├── lib/                  # Funções utilitárias
+├── pages/                # Componentes de página
+└── App.tsx               # Componente principal da aplicação
 ```
 
-## KYC Verification Steps
+# Desafios e decisões
+- Selfie e reconhecimento facial: queria deixar o mais próximo possível do real, encontrar uma lib js/react que faça isso sem setup complicado e código macarrônico foi um pouco difícil, pesquisei e testei diversas libs diferentes até encontrar uma que se encaixou bem neste desafio, a humanjs.
 
-The application guides users through a 5-step verification process:
+- build: o tamanho do build foi ficando cada vez maior a medida que fui evoluindo o app, chegou a ficar maior que 3mb, então tive que pesquisar técnicas para diminuir o tamanho do build final usando vite, explorei algumas configurações do vite e como separar algumas partes do build em chunks menores para melhorar o tamanho final, usei dynamic import de componentes de kyc que ajuda a otimizar o tamanho final do build, tambem usei postcss para diminuir o tamanho do css, que ajudou em uma pontuação boa no lighthouse.
 
-1. **Personal Information** - Name, email, phone, date of birth, country
-2. **Address** - Street address, city, state, postal code, and address proof upload
-3. **Identity** - Document type selection, ID number, and document photo uploads (front/back)
-4. **Selfie** - Real-time face detection and selfie capture using webcam
-5. **Review** - Review all information before final submission
+- acessibilidade: não foi um desafio mas conforme testei vi que a pontuação não subia, então fiz pequenos ajustes para chegar a pontuação acima de 90.
 
-## Browser Compatibility
+- testes: os testes estavam sendo um desafio, então usei claude code para me ajudar a gerar boa parte deles, tomando cuidado de checar cada e ver se eles estavam testando o comportamento corretamente, um dos componentes que usam selfie foi um problema pois a lib de camera nao iria funcionar em ambiente de teste e foi necessário criar um mock.
 
-- Chrome/Edge (recommended) - Full support
-- Firefox - Full support
-- Safari - Full support (requires HTTPS for webcam access)
-
-**Note:** Webcam features require HTTPS in production environments and user permission.
-
-## Development Notes
-
-### Face Detection
-
-The selfie step uses `@vladmandic/human` for real-time face detection. The face detection:
-- Initializes automatically when the camera is activated
-- Requires minimum 60% confidence level for capture
-- Provides real-time feedback on face detection status
-
-### Form Validation
-
-All forms use React Hook Form with Zod schema validation for:
-- Type-safe form data
-- Real-time validation feedback
-- Consistent error handling
-
-### Styling
-
-The project uses Tailwind CSS 4 with:
-- Custom design tokens
-- Dark/light theme support
-- Responsive breakpoints
-- Custom animations via `tw-animate-css`
-
-## Building for Production
-
-1. Build the application:
-```bash
-npm run build
-```
-
-2. The production-ready files will be in the `dist/` directory
-
-3. Preview the production build:
-```bash
-npm run preview
-```
-
-## Troubleshooting
-
-### Port already in use
-If port 5173 is already in use, Vite will automatically use the next available port. Check the terminal output for the actual URL.
-
-### Webcam not working
-- Ensure your browser has permission to access the webcam
-- Use HTTPS in production (required by most browsers)
-- Check that no other application is using the webcam
-
-### Build errors
-If you encounter TypeScript errors during build:
-```bash
-npm run build
-```
-Check the error messages and ensure all dependencies are properly installed.
-
-## License
-
-This project is private and proprietary.
-
-## Support
-
-For issues or questions, please contact the development team.
+- storybook: apesar de ser simples de configurar, eu queria que o storybook funcionasse junto com meu app em uma url /storybook ou whatever, o problema é que de primeira isso não funcionou, então fiz pesquisa no google de como fazê-lo e tive auxílio da llm para gerar os arquivos e configurações necessários para funcionar na vercel.
