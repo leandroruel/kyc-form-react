@@ -32,6 +32,7 @@ interface ComboboxProps {
   emptyText?: string
   className?: string
   isLoading?: boolean
+  ariaLabel?: string
 }
 
 export function Combobox({
@@ -43,6 +44,7 @@ export function Combobox({
   emptyText = "No option found.",
   className,
   isLoading = false,
+  ariaLabel,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -56,6 +58,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={ariaLabel || placeholder}
           className={cn("w-full justify-between font-normal", !value && "text-muted-foreground", className)}
         >
           <span className="truncate">
@@ -139,6 +142,7 @@ export function ExampleCombobox() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label="Select framework"
           className="w-[200px] justify-between"
         >
           {value

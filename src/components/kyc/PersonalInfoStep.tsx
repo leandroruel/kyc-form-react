@@ -165,6 +165,7 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
               searchPlaceholder="Buscar país..."
               emptyText="Nenhum país encontrado"
               isLoading={isLoadingCountries}
+              ariaLabel="Selecionar país de residência"
             />
           </div>
           {isCountriesError && (
