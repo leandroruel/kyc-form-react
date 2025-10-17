@@ -229,7 +229,7 @@ export const WithMaxSize: Story = {
 
 export const Disabled: Story = {
   render: () => {
-    const [files, setFiles] = useState<Array<{ name: string; preview?: string; size: number }>>([]);
+    const [files] = useState<Array<{ name: string; preview?: string; size: number }>>([]);
 
     return (
       <FileUpload

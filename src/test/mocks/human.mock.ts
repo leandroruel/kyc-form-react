@@ -11,7 +11,7 @@ export interface Config {
 }
 
 export class Human {
-  constructor(config?: Partial<Config>) {
+  constructor(_config?: Partial<Config>) {
     // Mock constructor
   }
 
@@ -25,7 +25,7 @@ export class Human {
     return Promise.resolve();
   }
 
-  async detect(input: any) {
+  async detect(_input: any) {
     // Mock detect - returns no faces detected
     return Promise.resolve({
       face: [],

@@ -63,7 +63,7 @@ export const WithLabel: Story = {
 
 export const WithDefaultDate: Story = {
   render: () => {
-    const [date, setDate] = useState<Date>(new Date());
+    const [date, setDate] = useState<Date | undefined>(new Date());
     return <DatePicker date={date} onDateChange={setDate} />;
   },
 };
