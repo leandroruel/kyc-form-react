@@ -9,6 +9,7 @@ import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/datepicker';
 import { useFormNavigation } from '@/hooks/useFormNavigation';
 import { ageValidator, phoneValidator, formatPhone } from '@/lib/validations';
+import { AlertCircle } from 'lucide-react';
 
 interface Country {
   name: {
@@ -36,19 +37,27 @@ interface PersonalInfoStepProps {
 }
 
 export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProps) {
-  const { data: countries = [], isLoading: isLoadingCountries } = useQuery<Country[]>({
+  const {
+    data: countries = [],
+    isLoading: isLoadingCountries,
+    isError: isCountriesError,
+  } = useQuery<Country[]>({
     queryKey: ['countries'],
     queryFn: async () => {
       const response = await fetch(
         'https://restcountries.com/v3.1/all?fields=name,cca2,flag'
       );
-      if (!response.ok) throw new Error('Failed to fetch countries');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch countries: ${response.status} ${response.statusText}`);
+      }
       const data = await response.json();
       return data.sort((a: Country, b: Country) =>
         a.name.common.localeCompare(b.name.common)
       );
     },
     staleTime: 1000 * 60 * 60, // 1 hour
+    retry: 3, // Retry failed requests up to 3 times
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 
   const countryOptions: ComboboxOption[] = countries.map((country) => ({
@@ -158,6 +167,14 @@ export function PersonalInfoStep({ defaultValues, onNext }: PersonalInfoStepProp
               isLoading={isLoadingCountries}
             />
           </div>
+          {isCountriesError && (
+            <div className="flex items-center gap-2 text-sm text-destructive mt-2 p-2 bg-destructive/10 rounded-md">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>
+                Erro ao carregar lista de países. Você pode digitar o nome do país manualmente.
+              </span>
+            </div>
+          )}
           {form.formState.errors.country && (
             <p className="text-sm text-destructive mt-1">{form.formState.errors.country.message}</p>
           )}

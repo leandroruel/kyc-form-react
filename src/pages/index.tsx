@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Kbd } from '@/components/ui/kbd';
+import { KYCStepErrorBoundary } from '@/components/kyc/KYCStepErrorBoundary';
+import { SelfieStepErrorBoundary } from '@/components/kyc/SelfieStepErrorBoundary';
 
 // Lazy load KYC step components for better code splitting
 const PersonalInfoStep = lazy(() => import('@/components/kyc/PersonalInfoStep').then(m => ({ default: m.PersonalInfoStep })));
@@ -61,17 +63,31 @@ interface FormData {
 
 const Index = () => {
   const [formData, setFormData] = useState<FormData>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch (error) {
+      console.error('Error loading saved form data:', error);
+      // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEY);
+      return {};
+    }
   });
 
   const [isComplete, setIsComplete] = useState(false);
 
   const multiStepForm = useMultiStepForm(steps);
 
-  // Auto-save to localStorage
+  // Auto-save to localStorage with error handling
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    } catch (error) {
+      console.error('Error saving form data:', error);
+      toast.error('Erro ao salvar progresso', {
+        description: 'Não foi possível salvar automaticamente. Seus dados podem ser perdidos.',
+      });
+    }
   }, [formData]);
 
   const handlePersonalInfoNext = (data: PersonalInfoData) => {
@@ -294,39 +310,65 @@ const Index = () => {
                   }}
                 >
                   {multiStepForm.currentStepIndex === 0 && (
-                    <PersonalInfoStep
-                      defaultValues={formData.personalInfo}
-                      onNext={handlePersonalInfoNext}
-                    />
+                    <KYCStepErrorBoundary
+                      stepName="Dados Pessoais"
+                      onNext={multiStepForm.nextStep}
+                    >
+                      <PersonalInfoStep
+                        defaultValues={formData.personalInfo}
+                        onNext={handlePersonalInfoNext}
+                      />
+                    </KYCStepErrorBoundary>
                   )}
                   {multiStepForm.currentStepIndex === 1 && (
-                    <AddressStep
-                      defaultValues={formData.address}
-                      onNext={handleAddressNext}
+                    <KYCStepErrorBoundary
+                      stepName="Endereço"
                       onPrevious={multiStepForm.previousStep}
-                    />
+                      onNext={multiStepForm.nextStep}
+                    >
+                      <AddressStep
+                        defaultValues={formData.address}
+                        onNext={handleAddressNext}
+                        onPrevious={multiStepForm.previousStep}
+                      />
+                    </KYCStepErrorBoundary>
                   )}
                   {multiStepForm.currentStepIndex === 2 && (
-                    <IdentityStep
-                      defaultValues={formData.identity}
-                      onNext={handleIdentityNext}
+                    <KYCStepErrorBoundary
+                      stepName="Identidade"
                       onPrevious={multiStepForm.previousStep}
-                    />
+                      onNext={multiStepForm.nextStep}
+                    >
+                      <IdentityStep
+                        defaultValues={formData.identity}
+                        onNext={handleIdentityNext}
+                        onPrevious={multiStepForm.previousStep}
+                      />
+                    </KYCStepErrorBoundary>
                   )}
                   {multiStepForm.currentStepIndex === 3 && (
-                    <SelfieStep
-                      defaultValues={formData.selfie}
-                      onNext={handleSelfieNext}
+                    <SelfieStepErrorBoundary
                       onPrevious={multiStepForm.previousStep}
-                    />
+                    >
+                      <SelfieStep
+                        defaultValues={formData.selfie}
+                        onNext={handleSelfieNext}
+                        onPrevious={multiStepForm.previousStep}
+                      />
+                    </SelfieStepErrorBoundary>
                   )}
                   {multiStepForm.currentStepIndex === 4 && (
-                    <ReviewStep
-                      data={formData as ReviewData}
-                      onEdit={multiStepForm.goToStep}
+                    <KYCStepErrorBoundary
+                      stepName="Revisão"
                       onPrevious={multiStepForm.previousStep}
-                      onSubmit={handleFinalSubmit}
-                    />
+                    >
+                      <ReviewStep
+                        data={formData as ReviewData}
+                        onEdit={multiStepForm.goToStep}
+                        onPrevious={multiStepForm.previousStep}
+                        onSubmit={handleFinalSubmit}
+                      />
+                    </KYCStepErrorBoundary>
                   )}
                 </motion.div>
               </AnimatePresence>
