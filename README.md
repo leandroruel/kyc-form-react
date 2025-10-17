@@ -107,3 +107,10 @@ src/
 - testes: os testes estavam sendo um desafio, então usei claude code para me ajudar a gerar boa parte deles, tomando cuidado de checar cada e ver se eles estavam testando o comportamento corretamente, um dos componentes que usam selfie foi um problema pois a lib de camera nao iria funcionar em ambiente de teste e foi necessário criar um mock.
 
 - storybook: apesar de ser simples de configurar, eu queria que o storybook funcionasse junto com meu app em uma url /storybook ou whatever, o problema é que de primeira isso não funcionou, então fiz pesquisa no google de como fazê-lo e tive auxílio da llm para gerar os arquivos e configurações necessários para funcionar na vercel.
+
+- validações: gerei as validações de CPF com claude, para que funcionasse com zod.
+
+design e tema: primeiro prototipei uma versão manualmente com shadcn + tailwind, a primeira versão era apenas os steppers na parte de cima da página. então procurei por outros designs no google, encontrei um que achei bom, enviei o print da imagem para o lovable, que me deu o código base da página inicial, depois gerei o tema no tweakcn que me deu todas as cores do tema necessários para usar. criei o componente de tema conforme consta na documentação do shadcn e o botão de toggle de dark mode.
+
+# tempo gasto
+no total gastei 40 horas, mas foi porque inicialmente tive que lidar com um problema inesperado com meu package manager. se não teria umas 4 horas a menos ai. lol.
